@@ -16,9 +16,9 @@ The result: your assessment work shows up inside the Workshop tasks, ready for y
 
 ## Quick links
 
-- [aka.ms/zta2ztw](https://aka.ms/zta2ztw) → **Access this page directly**
-- [aka.ms/zta2ztw/issues](https://aka.ms/zta2ztw/issues) → **Report a bug or open an issue**
-- [aka.ms/zta2ztw/feedback](https://aka.ms/zta2ztw/feedback) → **Share your feedback — tell us what you like and how we can improve**
+- [aka.ms/zta2ztws](https://aka.ms/zta2ztws) → **Access this page directly**
+- [aka.ms/zta2ztws/issues](https://aka.ms/zta2ztws/issues) → **Report a bug or open an issue**
+- [aka.ms/zta2ztws/feedback](https://aka.ms/zta2ztws/feedback) → **Share your feedback — tell us what you like and how we can improve**
 
 ## Prerequisites
 
