@@ -34,10 +34,26 @@ The result: your assessment work shows up inside the Workshop tasks, ready for y
 .\Convert-ZTAssessmentToZTWorkshop.ps1 -HtmlFilePath ".\ZeroTrustAssessmentReport.html"
 ```
 
-This produces a timestamped JSON file in the current folder, for example:
+This produces a timestamped JSON file in the current folder. The filename includes the pillar you exported — `all` when no pillar is selected, or the pillar name when you use `-Pillar`. For example:
 
 ```
-ZTA-to-Workshop-2026-06-05_152200.json
+ZTA-to-Workshop-all-2026-06-05_152200.json
+```
+
+### Export a single pillar
+
+Use `-Pillar` to export just one pillar (`Identity`, `Devices`, `Data`, or `Network`). The pillar name is added to the output filename so you can keep per-pillar exports side by side.
+
+```powershell
+.\Convert-ZTAssessmentToZTWorkshop.ps1 `
+    -HtmlFilePath ".\ZeroTrustAssessmentReport.html" `
+    -Pillar Identity
+```
+
+Produces, for example:
+
+```
+ZTA-to-Workshop-Identity-2026-06-05_152200.json
 ```
 
 ### Specify an output file
@@ -61,7 +77,8 @@ ZTA-to-Workshop-2026-06-05_152200.json
 | Parameter | Required | Default | Description |
 |---|---|---|---|
 | `-HtmlFilePath` | Yes | — | Path to the Zero Trust Assessment HTML report. |
-| `-OutputFilePath` | No | `./ZTA-to-Workshop-{timestamp}.json` | Where to save the generated JSON. |
+| `-Pillar` | No | _all pillars_ | Export only a single pillar. Accepts `Identity`, `Devices`, `Data`, or `Network`. The output filename includes the pillar name (or `all` when this is omitted). |
+| `-OutputFilePath` | No | `./ZTA-to-Workshop-{pillar-or-all}-{timestamp}.json` | Where to save the generated JSON. |
 | `-MappingFilePath` | No | `./test-mapping.json` | Path to the test-to-task mapping file (included). |
 
 ## Import into the Zero Trust Workshop

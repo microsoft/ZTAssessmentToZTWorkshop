@@ -7,7 +7,11 @@ param(
     [string]$MappingFilePath = './test-mapping.json',
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputFilePath = ("./ZTA-to-Workshop-{0}.json" -f (Get-Date -Format 'yyyy-MM-dd_HHmmss')),
+    [string]$OutputFilePath,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('Identity', 'Devices', 'Data', 'Network')]
+    [string]$Pillar,
 
     [Parameter(Mandatory = $false)]
     [string[]]$KnownPillars = @('identity', 'devices', 'data', 'network', 'infrastructure', 'security-ops', 'ai')
@@ -15,6 +19,29 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# --- 0. Resolve pillar filter and build default output filename ---
+# When -Pillar is supplied, restrict processing to that pillar and tag the
+# output filename with its name. Otherwise tag the filename with "all".
+$pillarFilterKey = $null
+$pillarSegment   = 'all'
+if ($PSBoundParameters.ContainsKey('Pillar') -and -not [string]::IsNullOrWhiteSpace($Pillar)) {
+    # ValidateSet matches case-insensitively but preserves the user's casing,
+    # so normalise to the canonical title-case form for the filename and logs.
+    $canonicalPillar = @{
+        identity = 'Identity'
+        devices  = 'Devices'
+        data     = 'Data'
+        network  = 'Network'
+    }
+    $pillarFilterKey = $Pillar.ToLower()
+    $pillarSegment   = $canonicalPillar[$pillarFilterKey]
+    Write-Host "Pillar filter active: only '$pillarSegment' tests will be exported."
+}
+
+if ([string]::IsNullOrWhiteSpace($OutputFilePath)) {
+    $OutputFilePath = "./ZTA-to-Workshop-{0}-{1}.json" -f $pillarSegment, (Get-Date -Format 'yyyy-MM-dd_HHmmss')
+}
 
 # --- 1. Validate and read the HTML file ---
 if (-not (Test-Path -LiteralPath $HtmlFilePath)) {
@@ -118,9 +145,16 @@ else {
 }
 
 # --- 4. Initialize pillars ---
+# When a pillar filter is active, only that pillar is initialized so the
+# output JSON contains a single pillar section.
 $pillars = [ordered]@{}
-foreach ($p in $KnownPillars) {
-    $pillars[$p] = [ordered]@{ taskOverrides = [ordered]@{} }
+if ($pillarFilterKey) {
+    $pillars[$pillarFilterKey] = [ordered]@{ taskOverrides = [ordered]@{} }
+}
+else {
+    foreach ($p in $KnownPillars) {
+        $pillars[$p] = [ordered]@{ taskOverrides = [ordered]@{} }
+    }
 }
 
 # --- 5. Process each test ---
@@ -129,6 +163,7 @@ $collectedNotes = @{}
 
 $skippedNoPillar = 0
 $skippedStatus = 0
+$skippedPillarFilter = 0
 foreach ($test in $tests) {
     $testId = [string]$test.TestId
 
@@ -147,6 +182,12 @@ foreach ($test in $tests) {
         continue
     }
     $pillarKey = $pillarRaw.ToLower()
+
+    # Honour the -Pillar filter when one is supplied.
+    if ($pillarFilterKey -and $pillarKey -ne $pillarFilterKey) {
+        $skippedPillarFilter++
+        continue
+    }
 
     # Resolve override keys — look up in the pillar-specific mapping
     if ($hasMappingFile) {
@@ -250,6 +291,11 @@ foreach ($pKey in $pillars.Keys) {
 
 $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
 
+# When -Pillar is used, scope and currentPillar reflect the selection so the
+# Workshop importer opens the correct pillar by default.
+$exportScope         = if ($pillarFilterKey) { $pillarFilterKey } else { 'all' }
+$currentPillarOutput = if ($pillarFilterKey) { $pillarFilterKey } else { 'identity' }
+
 # --- 7. Build the full output structure ---
 $output = [ordered]@{
     metadata      = [ordered]@{
@@ -258,12 +304,12 @@ $output = [ordered]@{
         exportedAt         = $timestamp
         applicationVersion = '1.0.0'
         exportType         = 'full-configuration'
-        scope              = 'all'
+        scope              = $exportScope
         description        = 'Zero Trust Assessment Result Export'
     }
     configuration = [ordered]@{
         applicationState = [ordered]@{
-            currentPillar = 'identity'
+            currentPillar = $currentPillarOutput
             lastModified  = $timestamp
         }
         pillars          = $pillars
@@ -303,5 +349,8 @@ if ($skippedNoPillar -gt 0) {
 }
 if ($skippedStatus -gt 0) {
     Write-Host "Skipped $skippedStatus test(s) with TestStatus = 'Skipped'."
+}
+if ($skippedPillarFilter -gt 0) {
+    Write-Host "Skipped $skippedPillarFilter test(s) outside the selected pillar ('$pillarSegment')."
 }
 Write-Host "Output written to: $OutputFilePath"
