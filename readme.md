@@ -1,5 +1,9 @@
 # Zero Trust Assessment To Zero Trust Workshop
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/)
+[![Access the tool](https://img.shields.io/badge/aka.ms-zta2ztws-0078D4)](https://aka.ms/zta2ztws)
+
 Carry your **Zero Trust Assessment** findings directly into the **Zero Trust Workshop** in seconds.
 
 ## What is this tool?
@@ -69,7 +73,7 @@ ZTA-to-Workshop-Identity-2026-06-05_152200.json
 ```powershell
 .\Convert-ZTAssessmentToZTWorkshop.ps1 `
     -HtmlFilePath ".\ZeroTrustAssessmentReport.html" `
-    -MappingFilePath ".\test-mapping.json"
+    -MappingFilePath ".\custom-mapping.json"
 ```
 
 ## Parameters
@@ -247,8 +251,7 @@ Expand a pillar below to see which Workshop tasks are covered and which assessme
 
 - Conditional Access policies for Privileged Access Workstations are configured
 
-**Integrate all Microsoft Entra logs 
-into Security Information and Event Management**
+**Integrate all Microsoft Entra logs into Security Information and Event Management**
 
 - Diagnostic settings are configured for all Microsoft Entra logs
 
@@ -542,7 +545,7 @@ into Security Information and Event Management**
 
 **Complete migration of apps to Private Access/App Proxy**
 
-- Test 25401
+- Application Proxy applications require preauthentication to block anonymous access
 
 **Roll out GSA client to all managed devices**
 
@@ -614,7 +617,7 @@ into Security Information and Event Management**
 
 **Rollout advanced filtering and Inspection**
 
-- Test 27014
+- Internet traffic is inspected across all Secure Web Gateway defense layers
 
 **Implement Universal Tenant Restrictions to protect Auth and Data Plan for M365**
 
@@ -640,7 +643,7 @@ into Security Information and Event Management**
 
 **Implement Threat Intelligence filtering**
 
-- Test 25412
+- Internet traffic is protected against threats using GSA threat intelligence filtering
 
 **Implement Cloud Firewall capabilities**
 
