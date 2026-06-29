@@ -355,14 +355,14 @@ foreach ($test in $tests) {
     # the extracted note (backtick code spans are left intact).
     $notesText = Remove-MarkdownFormatting $notesText
 
-    # Normalise every note to a consistent "<icon> <Status>: <text>" shape:
+    # Normalise every note to a consistent "<icon> <text>" shape:
     #   * Strip any leading status emoji the assessment already added so the
     #     icon isn't duplicated.
     #   * For verbose notes (over the per-line limit) use the concise TestTitle
     #     instead of the full result text, leaving more room for other findings
     #     under the overall hard cap.
-    #   * Prepend our own status icon and word (omitted when TestStatus is
-    #     unknown). Notes with no TestTitle still get the prefix on their text.
+    #   * Prepend our own status icon (its glyph still reflects the TestStatus);
+    #     the status word itself is omitted.
     if (-not [string]::IsNullOrWhiteSpace($notesText)) {
         $notesText = [regex]::Replace($notesText, '^[\p{So}\uFE0F\s]+', '')
         $body = if ($notesText.Length -gt $script:MaxNotesLineLength -and -not [string]::IsNullOrWhiteSpace($testTitle)) {
@@ -372,12 +372,7 @@ foreach ($test in $tests) {
             $notesText
         }
         $icon = Get-StatusIcon $testStatus
-        $notesText = if ([string]::IsNullOrWhiteSpace($testStatus)) {
-            "$icon $body"
-        }
-        else {
-            "$icon $($testStatus.Trim()): $body"
-        }
+        $notesText = "$icon $body"
     }
 
     # Ensure pillar exists
